@@ -107,51 +107,10 @@ public class Controller : MonoBehaviour
             mObjectPos[i / 4] = new ObjectPos(int.Parse(result[i]), int.Parse(result[i + 1]), int.Parse(result[i + 2]), int.Parse(result[i + 3]));
             mObjectPos[i / 4].printAllPos(i / 4);
         }
-
-        /*
-        this.new_cube_red.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        this.new_cube_blue.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        this.new_cube_green.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        this.new_cube_yellow.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        */
  
         this.new_cube_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosX() + Vector3.forward * mObjectPos[0].getPosY(), Quaternion.identity);
         this.new_cube_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosX() + Vector3.forward * mObjectPos[1].getPosY(), Quaternion.identity);
         this.new_cube_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosX() + Vector3.forward * mObjectPos[2].getPosY(), Quaternion.identity);
         this.new_cube_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosX() + Vector3.forward * mObjectPos[3].getPosY(), Quaternion.identity);
-
-        // ------------------------------------------------------------------------------------------
-
-        if (Input.GetKeyDown(KeyCode.RightArrow) && false)
-        {
-            this.new_cube_red.transform.Translate(Vector3.right * speed /* * Time.smoothDeltaTime */, Space.World);
-        }
-
-        if (Input.GetKeyDown(KeyCode.LeftArrow) && false)
-        {
-            this.new_cube_red.transform.Translate(Vector3.right * speed /* * Time.smoothDeltaTime */ * -1, Space.World);
-        }
-
-        if (Input.GetKeyDown(KeyCode.UpArrow) && false)
-        {
-            this.new_cube_red.transform.Translate(Vector3.forward * speed /* * Time.smoothDeltaTime */, Space.World);
-        }
-
-        if (Input.GetKeyDown(KeyCode.DownArrow) && false)
-        {
-            this.new_cube_red.transform.Translate(Vector3.forward * speed /* * Time.smoothDeltaTime */ * -1, Space.World);
-        }
-        /*
-        this.new_cube_red.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        this.new_cube_blue.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        this.new_cube_green.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        this.new_cube_yellow.transform.Translate(Vector3.right * speed * Time.smoothDeltaTime);
-        */
-
-        
     }
 }
-
-/*
- * if (Input.GetKey(KeyCode.DownArrow))
- */
