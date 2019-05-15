@@ -21,15 +21,15 @@ public class Controller : MonoBehaviour
         private int posX;
         private int posY;
 
-        private int desPosX;
-        private int desPosY;
+        private int posDesX;
+        private int posDesY;
 
         public ObjectPos(int x, int y, int xd, int yd)
         {
             posX = x;
             posY = y;
-            desPosX = xd;
-            desPosY = yd;
+            posDesX = xd;
+            posDesY = yd;
         }
 
         public int getPosX()
@@ -40,13 +40,21 @@ public class Controller : MonoBehaviour
         {
             return posY;
         }
+        public int getPosDesX()
+        {
+            return posDesX;
+        }
+        public int getPosDesY()
+        {
+            return posDesY;
+        }
 
         public void printAllPos(int x)
         {
             Debug.Log(x + " posX : " + posX);
             Debug.Log(x + " posY : " + posY);
-            Debug.Log(x + " desPosX : " + desPosX);
-            Debug.Log(x + " desPosY : " + desPosY);
+            Debug.Log(x + " desPosX : " + posDesX);
+            Debug.Log(x + " desPosY : " + posDesY);
         }
     }
 
@@ -55,45 +63,33 @@ public class Controller : MonoBehaviour
     GameObject cube_green;
     GameObject cube_yellow;
 
-    GameObject new_cube;
-    Vector3 positionValue;
-
-    GameObject new_cube_red;
-    GameObject new_cube_blue;
-    GameObject new_cube_green;
-    GameObject new_cube_yellow;
+    GameObject spot_red;
+    GameObject spot_blue;
+    GameObject spot_green;
+    GameObject spot_yellow;
 
     void Start()
     {
         mObjectPos = new ObjectPos[4];
 
         sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        var ep = new IPEndPoint(IPAddress.Parse("175.122.48.163"), 8080);
+        var ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8080);
         sock.Connect(ep);
 
         cmd = string.Empty;
         receiverBuff = new byte[8192];
 
         this.cube_red = GameObject.Find("Cube_Red");
-        this.cube_blue = GameObject.Find("Cube_Blue");
         this.cube_green = GameObject.Find("Cube_Green");
+        this.cube_blue = GameObject.Find("Cube_Blue");
         this.cube_yellow = GameObject.Find("Cube_Yellow");
 
-        positionValue = new Vector3(Random.Range(-10.0f, 10.0f), 1, Random.Range(-10.0f, 10.0f));
-        new_cube = (GameObject)Instantiate(cube_red, positionValue, Quaternion.identity);
-        positionValue = new Vector3(Random.Range(-10.0f, 10.0f), 1, Random.Range(-10.0f, 10.0f));
-        new_cube = (GameObject)Instantiate(cube_blue, positionValue, Quaternion.identity);
-        positionValue = new Vector3(Random.Range(-10.0f, 10.0f), 1, Random.Range(-10.0f, 10.0f));
-        new_cube = (GameObject)Instantiate(cube_green, positionValue, Quaternion.identity);
-        positionValue = new Vector3(Random.Range(-10.0f, 10.0f), 1, Random.Range(-10.0f, 10.0f));
-        new_cube = (GameObject)Instantiate(cube_yellow, positionValue, Quaternion.identity);
+        this.spot_red = GameObject.Find("Spot_Red");
+        this.spot_green = GameObject.Find("Spot_Green");
+        this.spot_blue = GameObject.Find("Spot_Blue");
+        this.spot_yellow = GameObject.Find("Spot_Yellow");
 
-        this.new_cube_red = GameObject.Find("Cube_Red(Clone)");
-        this.new_cube_blue = GameObject.Find("Cube_Blue(Clone)");
-        this.new_cube_green = GameObject.Find("Cube_Green(Clone)");
-        this.new_cube_yellow = GameObject.Find("Cube_Yellow(Clone)");
-
-        speed = new_cube.transform.localScale.x;
+        speed = cube_red.transform.localScale.x;
     }
 
     void Update()
@@ -107,10 +103,15 @@ public class Controller : MonoBehaviour
             mObjectPos[i / 4] = new ObjectPos(int.Parse(result[i]), int.Parse(result[i + 1]), int.Parse(result[i + 2]), int.Parse(result[i + 3]));
             mObjectPos[i / 4].printAllPos(i / 4);
         }
- 
-        this.new_cube_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosX() + Vector3.forward * mObjectPos[0].getPosY(), Quaternion.identity);
-        this.new_cube_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosX() + Vector3.forward * mObjectPos[1].getPosY(), Quaternion.identity);
-        this.new_cube_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosX() + Vector3.forward * mObjectPos[2].getPosY(), Quaternion.identity);
-        this.new_cube_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosX() + Vector3.forward * mObjectPos[3].getPosY(), Quaternion.identity);
+
+        this.cube_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosX() + Vector3.forward * mObjectPos[0].getPosY(), Quaternion.identity);
+        this.cube_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosX() + Vector3.forward * mObjectPos[1].getPosY(), Quaternion.identity);
+        this.cube_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosX() + Vector3.forward * mObjectPos[2].getPosY(), Quaternion.identity);
+        this.cube_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosX() + Vector3.forward * mObjectPos[3].getPosY(), Quaternion.identity);
+
+        this.spot_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosDesX() + Vector3.forward * mObjectPos[0].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
+        this.spot_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosDesX() + Vector3.forward * mObjectPos[1].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
+        this.spot_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosDesX() + Vector3.forward * mObjectPos[2].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
+        this.spot_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosDesX() + Vector3.forward * mObjectPos[3].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
     }
 }
