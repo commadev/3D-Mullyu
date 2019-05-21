@@ -4,17 +4,18 @@ using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System;
 
 public class Controller : MonoBehaviour
 {
-
-    float speed;
+    int animationCount = 1000;
 
     string[] result;
     Socket sock;
     string cmd;
     byte[] receiverBuff;
     ObjectPos[] mObjectPos;
+    ObjectPos[] mPreObjectPos;
 
     class ObjectPos
     {
@@ -49,12 +50,24 @@ public class Controller : MonoBehaviour
             return posDesY;
         }
 
+        protected virtual ObjectPos DeepCopy()
+        {
+            ObjectPos other = (ObjectPos)this.MemberwiseClone();
+            other.posX = getPosX();
+            other.posY = getPosY();
+            other.posDesX = getPosDesX();
+            other.posDesY = getPosDesY();
+            return other;
+        }
+
+        public ObjectPos Clone()
+        {
+            return DeepCopy();
+        }
+
         public void printAllPos(int x)
         {
-            Debug.Log(x + " posX : " + posX);
-            Debug.Log(x + " posY : " + posY);
-            Debug.Log(x + " desPosX : " + posDesX);
-            Debug.Log(x + " desPosY : " + posDesY);
+            Debug.Log(x + " posX : " + posX + " posY : " + posY + " desPosX : " + posDesX + " desPosY : " + posDesY);
         }
     }
 
@@ -63,15 +76,13 @@ public class Controller : MonoBehaviour
     GameObject cube_green;
     GameObject cube_yellow;
 
-    GameObject spot_red;
-    GameObject spot_blue;
-    GameObject spot_green;
-    GameObject spot_yellow;
+    GameObject dst_red;
+    GameObject dst_blue;
+    GameObject dst_green;
+    GameObject dst_yellow;
 
     void Start()
     {
-        mObjectPos = new ObjectPos[4];
-
         sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         var ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8080);
         sock.Connect(ep);
@@ -84,12 +95,18 @@ public class Controller : MonoBehaviour
         this.cube_blue = GameObject.Find("Cube_Blue");
         this.cube_yellow = GameObject.Find("Cube_Yellow");
 
-        this.spot_red = GameObject.Find("Spot_Red");
-        this.spot_green = GameObject.Find("Spot_Green");
-        this.spot_blue = GameObject.Find("Spot_Blue");
-        this.spot_yellow = GameObject.Find("Spot_Yellow");
+        this.dst_red = GameObject.Find("Dst_Red");
+        this.dst_green = GameObject.Find("Dst_Green");
+        this.dst_blue = GameObject.Find("Dst_Blue");
+        this.dst_yellow = GameObject.Find("Dst_Yellow");
 
-        speed = cube_red.transform.localScale.x;
+        mObjectPos = new ObjectPos[4];
+        mPreObjectPos = new ObjectPos[4];
+
+        mPreObjectPos[0] = new ObjectPos(0, 0, 0, 0);
+        mPreObjectPos[1] = new ObjectPos(0, 0, 0, 0);
+        mPreObjectPos[2] = new ObjectPos(0, 0, 0, 0);
+        mPreObjectPos[3] = new ObjectPos(0, 0, 0, 0);
     }
 
     void Update()
@@ -104,14 +121,60 @@ public class Controller : MonoBehaviour
             mObjectPos[i / 4].printAllPos(i / 4);
         }
 
-        this.cube_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosX() + Vector3.forward * mObjectPos[0].getPosY(), Quaternion.identity);
-        this.cube_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosX() + Vector3.forward * mObjectPos[1].getPosY(), Quaternion.identity);
-        this.cube_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosX() + Vector3.forward * mObjectPos[2].getPosY(), Quaternion.identity);
-        this.cube_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosX() + Vector3.forward * mObjectPos[3].getPosY(), Quaternion.identity);
+        /*
+        if( Math.Abs(mObjectPos[0].getPosX() - mPreObjectPos[0].getPosX()) == 1 || Math.Abs(mObjectPos[0].getPosY() - mPreObjectPos[0].getPosY()) == 1 ||
+            Math.Abs(mObjectPos[1].getPosX() - mPreObjectPos[1].getPosX()) == 1 || Math.Abs(mObjectPos[1].getPosY() - mPreObjectPos[1].getPosY()) == 1 ||
+            Math.Abs(mObjectPos[2].getPosX() - mPreObjectPos[2].getPosX()) == 1 || Math.Abs(mObjectPos[2].getPosY() - mPreObjectPos[2].getPosY()) == 1 ||
+            Math.Abs(mObjectPos[3].getPosX() - mPreObjectPos[3].getPosX()) == 1 || Math.Abs(mObjectPos[3].getPosY() - mPreObjectPos[3].getPosY()) == 1)
+        {
+            for (int i=0; i<animationCount;i++)
+            {
+                if(mObjectPos[0].getPosX() - mPreObjectPos[0].getPosX() == 0)
+                    this.cube_red.transform.Translate(Vector3.forward * (1 / animationCount) * (mObjectPos[0].getPosY() - mPreObjectPos[0].getPosY()));
+                else
+                    this.cube_red.transform.Translate(Vector3.right * (1 / animationCount) * (mObjectPos[0].getPosX() - mPreObjectPos[0].getPosX()));
 
-        this.spot_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosDesX() + Vector3.forward * mObjectPos[0].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
-        this.spot_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosDesX() + Vector3.forward * mObjectPos[1].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
-        this.spot_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosDesX() + Vector3.forward * mObjectPos[2].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
-        this.spot_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosDesX() + Vector3.forward * mObjectPos[3].getPosDesY() + Vector3.up * 5, Quaternion.Euler(90, 0, 0));
+                if (mObjectPos[0].getPosX() - mPreObjectPos[0].getPosX() == 0)
+                    this.cube_green.transform.Translate(Vector3.forward * (1 / animationCount) * (mObjectPos[1].getPosY() - mPreObjectPos[1].getPosY()));
+                else
+                    this.cube_green.transform.Translate(Vector3.right * (1 / animationCount) * (mObjectPos[1].getPosX() - mPreObjectPos[1].getPosX()));
+
+                if (mObjectPos[0].getPosX() - mPreObjectPos[0].getPosX() == 0)
+                    this.cube_blue.transform.Translate(Vector3.forward * (1 / animationCount) * (mObjectPos[2].getPosY() - mPreObjectPos[2].getPosY()));
+                else
+                    this.cube_blue.transform.Translate(Vector3.right * (1 / animationCount) * (mObjectPos[2].getPosX() - mPreObjectPos[2].getPosX()));
+
+                if (mObjectPos[0].getPosX() - mPreObjectPos[0].getPosX() == 0)
+                    this.cube_yellow.transform.Translate(Vector3.forward * (1 / animationCount) * (mObjectPos[3].getPosY() - mPreObjectPos[3].getPosY()));
+                else
+                    this.cube_yellow.transform.Translate(Vector3.right * (1 / animationCount) * (mObjectPos[3].getPosX() - mPreObjectPos[3].getPosX()));
+
+            }
+        }
+        else
+        {
+            this.cube_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosX() + Vector3.forward * mObjectPos[0].getPosY() + Vector3.up * 1, Quaternion.identity);
+            this.cube_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosX() + Vector3.forward * mObjectPos[1].getPosY() + Vector3.up * 1, Quaternion.identity);
+            this.cube_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosX() + Vector3.forward * mObjectPos[2].getPosY() + Vector3.up * 1, Quaternion.identity);
+            this.cube_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosX() + Vector3.forward * mObjectPos[3].getPosY() + Vector3.up * 1, Quaternion.identity);
+        }
+        */
+
+        /*
+        mPreObjectPos[0] = mObjectPos[0].Clone();
+        mPreObjectPos[1] = mObjectPos[1].Clone();
+        mPreObjectPos[2] = mObjectPos[2].Clone();
+        mPreObjectPos[3] = mObjectPos[3].Clone();
+        */
+
+        this.cube_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosX() + Vector3.forward * mObjectPos[0].getPosY() + Vector3.up * 1, Quaternion.identity);
+        this.cube_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosX() + Vector3.forward * mObjectPos[1].getPosY() + Vector3.up * 1, Quaternion.identity);
+        this.cube_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosX() + Vector3.forward * mObjectPos[2].getPosY() + Vector3.up * 1, Quaternion.identity);
+        this.cube_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosX() + Vector3.forward * mObjectPos[3].getPosY() + Vector3.up * 1, Quaternion.identity);
+
+        this.dst_red.transform.SetPositionAndRotation(Vector3.right * mObjectPos[0].getPosDesX() + Vector3.forward * mObjectPos[0].getPosDesY() + Vector3.up * 0.5f, Quaternion.identity);
+        this.dst_green.transform.SetPositionAndRotation(Vector3.right * mObjectPos[1].getPosDesX() + Vector3.forward * mObjectPos[1].getPosDesY() + Vector3.up * 0.5f, Quaternion.identity);
+        this.dst_blue.transform.SetPositionAndRotation(Vector3.right * mObjectPos[2].getPosDesX() + Vector3.forward * mObjectPos[2].getPosDesY() + Vector3.up * 0.5f, Quaternion.identity);
+        this.dst_yellow.transform.SetPositionAndRotation(Vector3.right * mObjectPos[3].getPosDesX() + Vector3.forward * mObjectPos[3].getPosDesY() + Vector3.up * 0.5f, Quaternion.identity);
     }
 }
